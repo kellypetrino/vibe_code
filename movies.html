@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movie Search</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+      background: #080b12;
+      color: #c9d1e0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 56px 20px 60px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+      color: #f0f4ff;
+    }
+
+    h1 span {
+      background: linear-gradient(90deg, #6c8ef7, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: #3d4a63;
+      margin-bottom: 40px;
+      font-size: 0.88rem;
+      letter-spacing: 0.3px;
+    }
+
+    .search-bar {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      max-width: 640px;
+      margin-bottom: 20px;
+    }
+
+    .search-bar input {
+      flex: 1;
+      padding: 13px 18px;
+      border-radius: 12px;
+      border: 1px solid #1e2740;
+      background: #0e1320;
+      color: #f0f4ff;
+      font-size: 0.97rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      min-width: 0;
+    }
+
+    .search-bar input:focus {
+      border-color: #6c8ef7;
+      box-shadow: 0 0 0 3px rgba(108,142,247,0.12);
+    }
+
+    .search-bar input::placeholder {
+      color: #2e3d58;
+    }
+
+    .genre-select option {
+      background: #0e1320;
+      color: #c9d1e0;
+    }
+
+    .genre-select {
+      padding: 13px 32px 13px 14px;
+      border-radius: 12px;
+      border: 1px solid #1e2740;
+      background: #0e1320;
+      color: #4a5e7a;
+      font-size: 0.88rem;
+      font-family: inherit;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234a5e7a' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      transition: border-color 0.2s, color 0.2s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .genre-select:focus {
+      border-color: #6c8ef7;
+      box-shadow: 0 0 0 3px rgba(108,142,247,0.12);
+    }
+
+    .genre-select.has-value {
+      color: #a5b8ff;
+      border-color: #3a4d7a;
+    }
+
+    .search-bar button {
+      padding: 13px 22px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #6c8ef7, #a78bfa);
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      white-space: nowrap;
+      letter-spacing: 0.2px;
+      flex-shrink: 0;
+    }
+
+    .search-bar button:hover {
+      opacity: 0.88;
+    }
+
+    .search-bar button:active {
+      transform: scale(0.97);
+    }
+
+    .random-btn {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: 1px solid #1e2d4a;
+      background: transparent;
+      color: #6b82a8;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      margin-bottom: 36px;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+      letter-spacing: 0.2px;
+    }
+
+    .random-btn:hover {
+      border-color: #6c8ef7;
+      color: #6c8ef7;
+      background: rgba(108,142,247,0.06);
+    }
+
+    .random-btn:active {
+      transform: scale(0.97);
+    }
+
+    .mode-tabs {
+      display: flex;
+      gap: 4px;
+      background: #0e1320;
+      border: 1px solid #1a2236;
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 28px;
+    }
+
+    .mode-tab {
+      padding: 8px 22px;
+      border-radius: 9px;
+      border: none;
+      background: transparent;
+      color: #3d4a63;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.18s, color 0.18s;
+      font-family: inherit;
+      letter-spacing: 0.2px;
+    }
+
+    .mode-tab.active {
+      background: #161e30;
+      color: #a5b8ff;
+    }
+
+    #compare-section { display: none; flex-direction: column; align-items: center; width: 100%; }
+    #compare-section.active { display: flex; }
+    #search-section { display: flex; flex-direction: column; align-items: center; width: 100%; }
+    #search-section.hidden { display: none; }
+
+    .compare-inputs {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      width: 100%;
+      max-width: 780px;
+      margin-bottom: 20px;
+    }
+
+    .compare-inputs input {
+      flex: 1;
+      padding: 13px 18px;
+      border-radius: 12px;
+      border: 1px solid #1e2740;
+      background: #0e1320;
+      color: #f0f4ff;
+      font-size: 0.97rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      min-width: 0;
+    }
+
+    .compare-inputs input:focus {
+      border-color: #6c8ef7;
+      box-shadow: 0 0 0 3px rgba(108,142,247,0.12);
+    }
+
+    .compare-inputs input::placeholder { color: #2e3d58; }
+
+    .compare-vs-divider {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #2e3d58;
+      letter-spacing: 1px;
+      flex-shrink: 0;
+    }
+
+    .compare-btn {
+      padding: 13px 24px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #6c8ef7, #a78bfa);
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      white-space: nowrap;
+      font-family: inherit;
+      flex-shrink: 0;
+    }
+
+    .compare-btn:hover { opacity: 0.88; }
+    .compare-btn:active { transform: scale(0.97); }
+
+    .compare-card {
+      background: #0e1320;
+      border: 1px solid #1a2236;
+      border-radius: 18px;
+      overflow: hidden;
+      width: 100%;
+      max-width: 900px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+      animation: fadeIn 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .compare-heads {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: start;
+    }
+
+    .compare-movie-head {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .compare-movie-head.right { align-items: flex-end; text-align: right; }
+
+    .compare-poster-wrap {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      max-height: 260px;
+      background: #07090f;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .compare-poster-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .compare-movie-info {
+      padding: 16px 20px 12px;
+    }
+
+    .compare-movie-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #f0f4ff;
+      line-height: 1.3;
+      margin-bottom: 4px;
+    }
+
+    .compare-movie-year {
+      font-size: 0.8rem;
+      color: #3d4a63;
+    }
+
+    .compare-vs-col {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 8px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: #2e3d58;
+    }
+
+    .compare-table {
+      border-top: 1px solid #111928;
+    }
+
+    .compare-row {
+      display: grid;
+      grid-template-columns: 1fr 120px 1fr;
+      border-bottom: 1px solid #0a0f1a;
+    }
+
+    .compare-row:last-child { border-bottom: none; }
+
+    .compare-attr {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      font-weight: 700;
+      color: #2e3d58;
+      text-align: center;
+      padding: 12px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-left: 1px solid #0a0f1a;
+      border-right: 1px solid #0a0f1a;
+    }
+
+    .compare-val {
+      font-size: 0.88rem;
+      color: #6b82a8;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+    }
+
+    .compare-val.right { justify-content: flex-end; text-align: right; }
+
+    .compare-val.winner {
+      color: #c8d8ff;
+      font-weight: 600;
+    }
+
+    .compare-val.winner::after {
+      content: '▲';
+      font-size: 0.55rem;
+      color: #6c8ef7;
+      margin-left: 5px;
+      flex-shrink: 0;
+    }
+
+    .compare-val.right.winner::after { display: none; }
+    .compare-val.right.winner::before {
+      content: '▲';
+      font-size: 0.55rem;
+      color: #6c8ef7;
+      margin-right: 5px;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 600px) {
+      .compare-inputs { flex-wrap: wrap; }
+      .compare-vs-divider { display: none; }
+      .compare-row { grid-template-columns: 1fr 80px 1fr; }
+      .compare-attr { font-size: 0.62rem; padding: 10px 4px; }
+      .compare-val { padding: 10px 12px; font-size: 0.82rem; }
+      .compare-movie-title { font-size: 0.9rem; }
+    }
+
+    #result {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+      max-width: 780px;
+    }
+
+
+    .card {
+      background: #0e1320;
+      border: 1px solid #1a2236;
+      border-radius: 18px;
+      overflow: hidden;
+      width: 100%;
+      display: flex;
+      gap: 0;
+      align-items: flex-start;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+      animation: fadeIn 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .poster {
+      width: 200px;
+      min-width: 200px;
+      aspect-ratio: 2 / 3;
+      background: #07090f;
+      display: flex;
+      align-items: stretch;
+      flex-shrink: 0;
+    }
+
+    .poster img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .poster .no-poster {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #07090f;
+    }
+
+    .no-poster-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: 24px 16px;
+    }
+
+    .no-poster-icon {
+      width: 52px;
+      height: 52px;
+      color: #1e2d4a;
+    }
+
+    .no-poster-icon svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .no-poster-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      font-weight: 600;
+      color: #1e2d4a;
+    }
+
+    .info {
+      padding: 28px 30px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .movie-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #f0f4ff;
+      line-height: 1.2;
+      letter-spacing: -0.3px;
+    }
+
+    .year {
+      font-size: 0.9rem;
+      color: #3d4a63;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .badge {
+      background: #131b2e;
+      border: 1px solid #1e2d4a;
+      border-radius: 20px;
+      padding: 3px 11px;
+      font-size: 0.75rem;
+      color: #6b82a8;
+      letter-spacing: 0.2px;
+    }
+
+    .badge.rating {
+      background: rgba(108,142,247,0.08);
+      border-color: rgba(108,142,247,0.2);
+      color: #6c8ef7;
+      font-weight: 600;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 7px 16px;
+      font-size: 0.86rem;
+    }
+
+    .meta-label {
+      color: #2e3d58;
+      white-space: nowrap;
+      padding-top: 1px;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      letter-spacing: 0.6px;
+      font-weight: 600;
+    }
+
+    .meta-value {
+      color: #8494b0;
+    }
+
+    .plot-section {
+      border-top: 1px solid #111928;
+      padding-top: 16px;
+    }
+
+    .plot-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #2e3d58;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .plot-text {
+      font-size: 0.9rem;
+      color: #6b82a8;
+      line-height: 1.65;
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 2px solid #1a2236;
+      border-top-color: #6c8ef7;
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+      margin: 24px auto;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 560px) {
+      .card { flex-direction: column; }
+      .poster { width: 100%; min-width: unset; aspect-ratio: 2 / 3; max-height: 320px; }
+      .poster img { width: 100%; height: 100%; }
+      .info { padding: 20px; }
+      .movie-title { font-size: 1.3rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Movie <span>Search</span></h1>
+  <p class="subtitle">Powered by OMDb API</p>
+
+  <div class="mode-tabs">
+    <button class="mode-tab active" id="tab-search" onclick="switchMode('search')">Search</button>
+    <button class="mode-tab" id="tab-compare" onclick="switchMode('compare')">Compare</button>
+  </div>
+
+  <div id="search-section">
+    <div class="search-bar">
+      <select id="genreSelect" class="genre-select" onchange="onGenreChange()">
+        <option value="">All Genres</option>
+      </select>
+      <input type="text" id="query" placeholder="Enter a movie title..." autocomplete="off" />
+      <button onclick="search()">Search</button>
+    </div>
+
+    <button class="random-btn" onclick="randomMovie()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/>
+        <polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/>
+      </svg>
+      Surprise Me
+    </button>
+
+    <div id="section-header" style="display:none; width:100%; max-width:780px; margin-bottom:16px; padding-bottom:14px; border-bottom:1px solid #111928;">
+      <div id="sectionTitle" style="font-size:0.72rem; text-transform:uppercase; letter-spacing:1px; font-weight:700; color:#2e3d58; margin-bottom:4px;"></div>
+      <div id="sectionSub" style="font-size:1.05rem; font-weight:600; color:#8494b0; letter-spacing:-0.2px;"></div>
+    </div>
+
+    <div id="result"></div>
+  </div>
+
+  <div id="compare-section">
+    <div class="compare-inputs">
+      <input type="text" id="compareA" placeholder="First movie title..." autocomplete="off" />
+      <span class="compare-vs-divider">VS</span>
+      <input type="text" id="compareB" placeholder="Second movie title..." autocomplete="off" />
+      <button class="compare-btn" onclick="compareMovies()">Compare</button>
+    </div>
+    <div id="compare-header" style="display:none; width:100%; max-width:900px; margin-bottom:16px; padding-bottom:14px; border-bottom:1px solid #111928;">
+      <div id="compareSectionTitle" style="font-size:0.72rem; text-transform:uppercase; letter-spacing:1px; font-weight:700; color:#2e3d58; margin-bottom:4px;"></div>
+      <div id="compareSectionSub" style="font-size:1.05rem; font-weight:600; color:#8494b0; letter-spacing:-0.2px;"></div>
+    </div>
+    <div id="compare-result" style="width:100%; max-width:900px;"></div>
+  </div>
+
+  <script>
+    const API_KEY = 'dbe6efe5';
+
+    const GENRES = ['Action','Comedy','Drama','Horror','Sci-Fi','Thriller','Romance','Animation','Crime','Documentary','Fantasy','Mystery'];
+
+    const GENRE_POOL = {
+      'Action':      ['tt0133093','tt0468569','tt0076759','tt0080684','tt0086190','tt0172495','tt1375666','tt4154796','tt0910970','tt0088763','tt0120737','tt0167260','tt0407887','tt1345836'],
+      'Comedy':      ['tt0109830','tt0114709','tt0266543','tt0382932','tt0118799','tt0097576','tt0107048','tt0094862','tt0116282','tt0338013','tt0395169','tt0317705'],
+      'Drama':       ['tt0111161','tt0068646','tt0071562','tt0108052','tt0073486','tt0099685','tt0120689','tt0317248','tt0253474','tt0114369','tt0102926','tt0364569','tt2582802','tt1375666'],
+      'Horror':      ['tt0083658','tt0078748','tt0081505','tt0107290','tt6751668','tt0116922','tt0120382','tt0361748','tt1457767','tt0077651','tt0087800','tt0080761'],
+      'Sci-Fi':      ['tt0133093','tt0816692','tt0816711','tt0910970','tt0062622','tt0083658','tt0078748','tt1375666','tt0470752','tt0482571','tt0212720','tt1798709'],
+      'Thriller':    ['tt0102926','tt0114814','tt0364569','tt0120735','tt0167404','tt0253474','tt2267998','tt1375666','tt0107290','tt0169547','tt0435761','tt0482571'],
+      'Romance':     ['tt0338013','tt0074958','tt0082096','tt0118799','tt0395169','tt0116282','tt1375666','tt0107048','tt0245429','tt0258463','tt0071853','tt0093779'],
+      'Animation':   ['tt0114709','tt0266543','tt0245429','tt0910970','tt0382932','tt0317705','tt2096673','tt0435761','tt0363771','tt1049413','tt2278388','tt3606756'],
+      'Crime':       ['tt0068646','tt0071562','tt0099685','tt0114814','tt0110912','tt0053125','tt0060196','tt0317248','tt0407887','tt0169547','tt0986264','tt1302006'],
+      'Documentary': ['tt1130884','tt0060196','tt0112384','tt0364569','tt5580390','tt2357129','tt3521164','tt0361748','tt1392214','tt0416449','tt1259521','tt0337804'],
+      'Fantasy':     ['tt0120737','tt0167261','tt0167260','tt0245429','tt0109830','tt0114709','tt0382932','tt0435761','tt0903747','tt0120586','tt0413573','tt0368226'],
+      'Mystery':     ['tt0114369','tt0253474','tt0482571','tt0816692','tt1375666','tt0364569','tt2267998','tt0120735','tt0097165','tt0167404','tt1981115','tt2015381'],
+    };
+
+    function selectedGenre() {
+      return document.getElementById('genreSelect').value || null;
+    }
+
+    function initGenreSelect() {
+      const sel = document.getElementById('genreSelect');
+      GENRES.forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g;
+        opt.textContent = g;
+        sel.appendChild(opt);
+      });
+    }
+
+    function onGenreChange() {
+      const sel = document.getElementById('genreSelect');
+      const genre = sel.value;
+      sel.classList.toggle('has-value', !!genre);
+
+      const title = document.getElementById('query').value.trim();
+      if (!title) {
+        if (genre) browseByGenre(genre);
+        else {
+          setHeader(null);
+          document.getElementById('result').innerHTML = '';
+        }
+      }
+    }
+
+    function setHeader(opts) {
+      const header = document.getElementById('section-header');
+      if (!opts) { header.style.display = 'none'; return; }
+      document.getElementById('sectionTitle').textContent = opts.title;
+      document.getElementById('sectionSub').textContent = opts.sub;
+      header.style.display = 'block';
+    }
+
+    function showError(msg) {
+      setHeader({ title: 'Error', sub: msg });
+      document.getElementById('sectionTitle').style.color = '#f87171';
+    }
+
+    async function browseByGenre(genre) {
+      const result = document.getElementById('result');
+
+      setHeader(null);
+      result.innerHTML = '<div class="spinner"></div>';
+
+      const pool = GENRE_POOL[genre] || [];
+      const shuffled = pool.slice().sort(() => Math.random() - 0.5);
+      const pick = shuffled.slice(0, 5);
+
+      try {
+        const details = await Promise.all(
+          pick.map(id =>
+            fetch(`https://www.omdbapi.com/?apikey=${API_KEY}&i=${id}&plot=full`).then(r => r.json())
+          )
+        );
+        const valid = details.filter(d => d.Response !== 'False');
+        setHeader({ title: 'Genre Picks', sub: `Top ${valid.length} picks in ${genre}` });
+        result.innerHTML = valid.map(renderCard).join('');
+      } catch (err) {
+        result.innerHTML = '';
+        showError('Something went wrong. Please try again.');
+      }
+    }
+
+    document.getElementById('query').addEventListener('keydown', e => {
+      if (e.key === 'Enter') search();
+    });
+
+    initGenreSelect();
+
+    async function search() {
+      const title = document.getElementById('query').value.trim();
+      const result = document.getElementById('result');
+
+      if (!title) {
+        showError('Please enter a movie title.');
+        return;
+      }
+
+      setHeader(null);
+      result.innerHTML = '<div class="spinner"></div>';
+
+      try {
+        // Step 1: search for matches
+        const searchRes = await fetch(`https://www.omdbapi.com/?apikey=${API_KEY}&s=${encodeURIComponent(title)}&type=movie`);
+        if (!searchRes.ok) throw new Error('Network error');
+        const searchData = await searchRes.json();
+
+        if (searchData.Response === 'False') {
+          result.innerHTML = '';
+          showError(searchData.Error || 'No results found.');
+          return;
+        }
+
+        // Step 2: fetch more results when filtering by genre so we have enough after filtering
+        const genre = selectedGenre();
+        const candidates = genre
+          ? searchData.Search.slice(0, 10)
+          : searchData.Search.slice(0, 5);
+
+        const details = await Promise.all(
+          candidates.map(m =>
+            fetch(`https://www.omdbapi.com/?apikey=${API_KEY}&i=${m.imdbID}&plot=full`)
+              .then(r => r.json())
+          )
+        );
+
+        const filtered = genre
+          ? details.filter(d => d.Genre && d.Genre.toLowerCase().includes(genre.toLowerCase())).slice(0, 5)
+          : details;
+
+        if (filtered.length === 0) {
+          result.innerHTML = '';
+          showError(genre
+            ? `No "${genre}" results found for "${title}". Try a different genre or title.`
+            : 'No results found.');
+          return;
+        }
+
+        const countLabel = `${filtered.length} result${filtered.length !== 1 ? 's' : ''}`;
+        const sub = genre ? `${countLabel} for "${title}" in ${genre}` : `${countLabel} for "${title}"`;
+        setHeader({ title: 'Search Results', sub });
+        result.innerHTML = filtered.map(renderCard).join('');
+      } catch (err) {
+        result.innerHTML = '';
+        showError('Something went wrong. Please try again.');
+      }
+    }
+
+    const RANDOM_POOL = [
+      'tt0111161','tt0068646','tt0071562','tt0468569','tt0050083',
+      'tt0108052','tt0167260','tt0110912','tt0060196','tt0137523',
+      'tt0816692','tt0245429','tt1375666','tt0109830','tt0133093',
+      'tt0076759','tt0080684','tt0086190','tt0120737','tt0167261',
+      'tt0073486','tt0099685','tt0047478','tt0114369','tt0102926',
+      'tt0317248','tt0038650','tt0120689','tt0172495','tt0482571',
+      'tt0120586','tt0253474','tt0407887','tt1345836','tt2582802',
+      'tt0114814','tt0118799','tt0364569','tt0910970','tt0088763',
+      'tt0057012','tt0056058','tt4154796','tt4154756','tt3501632',
+      'tt0114709','tt0266543','tt1517268','tt6751668','tt0816711',
+      'tt0095765','tt0056592','tt0053604','tt0033467','tt0032553',
+    ];
+
+    async function randomMovie() {
+      const result = document.getElementById('result');
+
+      setHeader(null);
+      result.innerHTML = '<div class="spinner"></div>';
+
+      const id = RANDOM_POOL[Math.floor(Math.random() * RANDOM_POOL.length)];
+
+      try {
+        const res = await fetch(`https://www.omdbapi.com/?apikey=${API_KEY}&i=${id}&plot=full`);
+        if (!res.ok) throw new Error('Network error');
+        const data = await res.json();
+
+        if (data.Response === 'False') {
+          result.innerHTML = '';
+          showError('Could not load a random movie. Try again!');
+          return;
+        }
+
+        document.getElementById('query').value = '';
+        setHeader({ title: 'Recommended For You', sub: 'A surprise pick just for you' });
+        result.innerHTML = renderCard(data);
+      } catch (err) {
+        result.innerHTML = '';
+        showError('Something went wrong. Please try again.');
+      }
+    }
+
+    const TYPE_ICONS = {
+      movie: {
+        label: 'Movie',
+        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+          <rect x="4" y="12" width="56" height="40" rx="4" stroke="currentColor" stroke-width="3"/>
+          <line x1="4" y1="24" x2="60" y2="24" stroke="currentColor" stroke-width="3"/>
+          <line x1="4" y1="40" x2="60" y2="40" stroke="currentColor" stroke-width="3"/>
+          <line x1="16" y1="12" x2="16" y2="24" stroke="currentColor" stroke-width="3"/>
+          <line x1="32" y1="12" x2="32" y2="24" stroke="currentColor" stroke-width="3"/>
+          <line x1="48" y1="12" x2="48" y2="24" stroke="currentColor" stroke-width="3"/>
+          <line x1="16" y1="40" x2="16" y2="52" stroke="currentColor" stroke-width="3"/>
+          <line x1="32" y1="40" x2="32" y2="52" stroke="currentColor" stroke-width="3"/>
+          <line x1="48" y1="40" x2="48" y2="52" stroke="currentColor" stroke-width="3"/>
+        </svg>`
+      },
+      series: {
+        label: 'TV Series',
+        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+          <rect x="4" y="8" width="56" height="38" rx="4" stroke="currentColor" stroke-width="3"/>
+          <polyline points="20,46 16,56 48,56 44,46" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+          <line x1="22" y1="56" x2="42" y2="56" stroke="currentColor" stroke-width="3"/>
+          <polygon points="26,18 26,36 44,27" fill="currentColor"/>
+        </svg>`
+      },
+      episode: {
+        label: 'Episode',
+        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+          <rect x="4" y="8" width="56" height="38" rx="4" stroke="currentColor" stroke-width="3"/>
+          <polyline points="20,46 16,56 48,56 44,46" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+          <circle cx="32" cy="27" r="10" stroke="currentColor" stroke-width="3"/>
+          <polygon points="29,22 29,32 39,27" fill="currentColor"/>
+        </svg>`
+      },
+      game: {
+        label: 'Game',
+        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+          <rect x="6" y="18" width="52" height="32" rx="8" stroke="currentColor" stroke-width="3"/>
+          <line x1="22" y1="30" x2="22" y2="38" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          <line x1="18" y1="34" x2="26" y2="34" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="44" cy="30" r="2.5" fill="currentColor"/>
+          <circle cx="50" cy="34" r="2.5" fill="currentColor"/>
+          <circle cx="38" cy="34" r="2.5" fill="currentColor"/>
+          <circle cx="44" cy="38" r="2.5" fill="currentColor"/>
+        </svg>`
+      },
+    };
+
+    function posterPlaceholder(type) {
+      const t = TYPE_ICONS[type] || { label: type || 'Unknown', svg: TYPE_ICONS.movie.svg };
+      return `<div class="no-poster">
+        <div class="no-poster-inner">
+          <div class="no-poster-icon">${t.svg}</div>
+          <div class="no-poster-label">${escHtml(t.label)}</div>
+        </div>
+      </div>`;
+    }
+
+    function renderCard(d) {
+      const posterHTML = d.Poster && d.Poster !== 'N/A'
+        ? `<img src="${d.Poster}" alt="Poster for ${escHtml(d.Title)}" />`
+        : posterPlaceholder(d.Type);
+
+      const rating = d.imdbRating && d.imdbRating !== 'N/A'
+        ? `<span class="badge rating">&#9733; ${d.imdbRating} / 10</span>` : '';
+
+      const genres = d.Genre && d.Genre !== 'N/A'
+        ? d.Genre.split(',').map(g => `<span class="badge">${escHtml(g.trim())}</span>`).join('') : '';
+
+      const RT_ICON = `<svg width="11" height="11" viewBox="0 0 100 100" style="display:inline-block;vertical-align:middle;margin-right:4px;flex-shrink:0">
+        <circle cx="50" cy="58" r="38" fill="#ff3c00"/>
+        <path d="M36 42 Q50 20 64 42" fill="none" stroke="#4caf50" stroke-width="10" stroke-linecap="round"/>
+        <line x1="50" y1="22" x2="50" y2="8" stroke="#4caf50" stroke-width="8" stroke-linecap="round"/>
+        <circle cx="50" cy="60" r="14" fill="rgba(255,255,255,0.2)"/>
+      </svg>`;
+
+      const MC_ICON = `<svg width="11" height="11" viewBox="0 0 100 100" style="display:inline-block;vertical-align:middle;margin-right:4px;flex-shrink:0">
+        <circle cx="50" cy="50" r="48" fill="#f5c518"/>
+        <text x="50" y="67" text-anchor="middle" font-size="54" font-weight="900" font-family="Arial,sans-serif" fill="#121212">M</text>
+      </svg>`;
+
+      const SOURCE_ICONS = {
+        'Internet Movie Database': null,
+        'Rotten Tomatoes': RT_ICON,
+        'Metacritic': MC_ICON,
+      };
+
+      const ratingBadges = (d.Ratings || [])
+        .filter(r => SOURCE_ICONS[r.Source] !== undefined && SOURCE_ICONS[r.Source] !== null)
+        .map(r => `<span class="badge" style="display:inline-flex;align-items:center;">${SOURCE_ICONS[r.Source]}${escHtml(r.Value)}</span>`)
+        .join('');
+
+      const meta = [
+        ['Director',  d.Director],
+        ['Cast',      d.Actors],
+        ['Language',  d.Language],
+        ['Runtime',   d.Runtime],
+        ['Released',  d.Released],
+        ['Country',   d.Country],
+      ].filter(([, v]) => v && v !== 'N/A')
+       .map(([label, val]) => `
+         <span class="meta-label">${label}</span>
+         <span class="meta-value">${escHtml(val)}</span>
+       `).join('');
+
+      const plot = d.Plot && d.Plot !== 'N/A'
+        ? `<div class="plot-section">
+             <div class="plot-label">Plot</div>
+             <div class="plot-text">${escHtml(d.Plot)}</div>
+           </div>` : '';
+
+      return `
+        <div class="card">
+          <div class="poster">${posterHTML}</div>
+          <div class="info">
+            <div class="title-row">
+              <div class="movie-title">${escHtml(d.Title)}</div>
+              <div class="year">${escHtml(d.Year || '')}</div>
+            </div>
+            <div class="badges">${rating}${ratingBadges}${genres}</div>
+            ${meta ? `<div class="meta-grid">${meta}</div>` : ''}
+            ${plot}
+          </div>
+        </div>`;
+    }
+
+    function switchMode(mode) {
+      const isCompare = mode === 'compare';
+      document.getElementById('tab-search').classList.toggle('active', !isCompare);
+      document.getElementById('tab-compare').classList.toggle('active', isCompare);
+      document.getElementById('search-section').classList.toggle('hidden', isCompare);
+      document.getElementById('compare-section').classList.toggle('active', isCompare);
+    }
+
+    document.getElementById('compareA').addEventListener('keydown', e => { if (e.key === 'Enter') compareMovies(); });
+    document.getElementById('compareB').addEventListener('keydown', e => { if (e.key === 'Enter') compareMovies(); });
+
+    async function compareMovies() {
+      const titleA = document.getElementById('compareA').value.trim();
+      const titleB = document.getElementById('compareB').value.trim();
+      const header = document.getElementById('compare-header');
+      const result = document.getElementById('compare-result');
+
+      if (!titleA || !titleB) {
+        header.style.display = 'block';
+        document.getElementById('compareSectionTitle').style.color = '#f87171';
+        document.getElementById('compareSectionTitle').textContent = 'Error';
+        document.getElementById('compareSectionSub').textContent = 'Please enter both movie titles.';
+        result.innerHTML = '';
+        return;
+      }
+
+      header.style.display = 'none';
+      result.innerHTML = '<div class="spinner"></div>';
+
+      try {
+        const [dataA, dataB] = await Promise.all([
+          fetch(`https://www.omdbapi.com/?apikey=${API_KEY}&t=${encodeURIComponent(titleA)}&plot=full`).then(r => r.json()),
+          fetch(`https://www.omdbapi.com/?apikey=${API_KEY}&t=${encodeURIComponent(titleB)}&plot=full`).then(r => r.json()),
+        ]);
+
+        const errA = dataA.Response === 'False' ? `"${titleA}": ${dataA.Error}` : null;
+        const errB = dataB.Response === 'False' ? `"${titleB}": ${dataB.Error}` : null;
+        if (errA || errB) {
+          header.style.display = 'block';
+          document.getElementById('compareSectionTitle').style.color = '#f87171';
+          document.getElementById('compareSectionTitle').textContent = 'Not Found';
+          document.getElementById('compareSectionSub').textContent = [errA, errB].filter(Boolean).join(' · ');
+          result.innerHTML = '';
+          return;
+        }
+
+        header.style.display = 'block';
+        document.getElementById('compareSectionTitle').style.color = '#2e3d58';
+        document.getElementById('compareSectionTitle').textContent = 'Comparison';
+        document.getElementById('compareSectionSub').textContent = `${dataA.Title} vs ${dataB.Title}`;
+        result.innerHTML = renderComparison(dataA, dataB);
+      } catch (err) {
+        result.innerHTML = '';
+        header.style.display = 'block';
+        document.getElementById('compareSectionTitle').style.color = '#f87171';
+        document.getElementById('compareSectionTitle').textContent = 'Error';
+        document.getElementById('compareSectionSub').textContent = 'Something went wrong. Please try again.';
+      }
+    }
+
+    function parseNum(str) {
+      if (!str || str === 'N/A') return null;
+      const n = parseFloat(str.replace(/[^0-9.]/g, ''));
+      return isNaN(n) ? null : n;
+    }
+
+    function runtimeMins(str) {
+      if (!str || str === 'N/A') return null;
+      const m = str.match(/(\d+)/);
+      return m ? parseInt(m[1]) : null;
+    }
+
+    function compareRow(labelA, labelB, attr, numA, numB) {
+      const winA = numA !== null && numB !== null && numA > numB;
+      const winB = numA !== null && numB !== null && numB > numA;
+      return `
+        <div class="compare-row">
+          <div class="compare-val${winA ? ' winner' : ''}">${escHtml(labelA)}</div>
+          <div class="compare-attr">${escHtml(attr)}</div>
+          <div class="compare-val right${winB ? ' winner' : ''}">${escHtml(labelB)}</div>
+        </div>`;
+    }
+
+    function renderComparison(a, b) {
+      const posterA = a.Poster && a.Poster !== 'N/A'
+        ? `<img src="${a.Poster}" alt="${escHtml(a.Title)}" />`
+        : `<div style="width:100%;height:100%;background:#07090f;display:flex;align-items:center;justify-content:center;color:#1e2d4a;font-size:0.8rem;">No poster</div>`;
+      const posterB = b.Poster && b.Poster !== 'N/A'
+        ? `<img src="${b.Poster}" alt="${escHtml(b.Title)}" />`
+        : `<div style="width:100%;height:100%;background:#07090f;display:flex;align-items:center;justify-content:center;color:#1e2d4a;font-size:0.8rem;">No poster</div>`;
+
+      const getRating = (d, source) => (d.Ratings || []).find(r => r.Source.includes(source))?.Value || 'N/A';
+
+      const rows = [
+        compareRow(
+          a.imdbRating !== 'N/A' ? `★ ${a.imdbRating}/10` : 'N/A',
+          b.imdbRating !== 'N/A' ? `★ ${b.imdbRating}/10` : 'N/A',
+          'IMDb',
+          parseNum(a.imdbRating), parseNum(b.imdbRating)
+        ),
+        compareRow(
+          getRating(a, 'Rotten Tomatoes'), getRating(b, 'Rotten Tomatoes'),
+          'Rotten Tomatoes',
+          parseNum(getRating(a, 'Rotten Tomatoes')), parseNum(getRating(b, 'Rotten Tomatoes'))
+        ),
+        compareRow(
+          getRating(a, 'Metacritic'), getRating(b, 'Metacritic'),
+          'Metacritic',
+          parseNum(getRating(a, 'Metacritic')), parseNum(getRating(b, 'Metacritic'))
+        ),
+        compareRow(a.Year || 'N/A', b.Year || 'N/A', 'Year', null, null),
+        compareRow(
+          a.Runtime || 'N/A', b.Runtime || 'N/A', 'Runtime',
+          runtimeMins(a.Runtime), runtimeMins(b.Runtime)
+        ),
+        compareRow(a.Genre || 'N/A', b.Genre || 'N/A', 'Genre', null, null),
+        compareRow(a.Director || 'N/A', b.Director || 'N/A', 'Director', null, null),
+        compareRow(a.Actors || 'N/A', b.Actors || 'N/A', 'Cast', null, null),
+      ].join('');
+
+      return `
+        <div class="compare-card">
+          <div class="compare-heads">
+            <div class="compare-movie-head">
+              <div class="compare-poster-wrap">${posterA}</div>
+              <div class="compare-movie-info">
+                <div class="compare-movie-title">${escHtml(a.Title)}</div>
+                <div class="compare-movie-year">${escHtml(a.Year || '')}</div>
+              </div>
+            </div>
+            <div class="compare-vs-col">VS</div>
+            <div class="compare-movie-head right">
+              <div class="compare-poster-wrap">${posterB}</div>
+              <div class="compare-movie-info">
+                <div class="compare-movie-title">${escHtml(b.Title)}</div>
+                <div class="compare-movie-year">${escHtml(b.Year || '')}</div>
+              </div>
+            </div>
+          </div>
+          <div class="compare-table">${rows}</div>
+        </div>`;
+    }
+
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>
